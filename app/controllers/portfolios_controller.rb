@@ -1,18 +1,20 @@
+
 class PortfoliosController < ApplicationController
   def index
     @portfolio_items = Portfolio.all
-  end 
+  end
 
   def angular
-     @angular_portfolio_items = Portfolio.angular 
+    @angular_portfolio_items = Portfolio.angular
   end
 
   def new
     @portfolio_item = Portfolio.new
+    3.times { @portfolio_item.technologies.build }
   end
 
   def create
-    @portfolio_item = Portfolio.new(params.require(:portfolio).permit(:title, :subtitle, :body))
+    @portfolio_item = Portfolio.new(portfolio_params)
 
     respond_to do |format|
       if @portfolio_item.save
@@ -22,38 +24,48 @@ class PortfoliosController < ApplicationController
       end
     end
   end
-  
+
   def edit
     @portfolio_item = Portfolio.find(params[:id])
-  end 
+  end
 
   def update
     @portfolio_item = Portfolio.find(params[:id])
-    
+
     respond_to do |format|
-      if @portfolio_item.update(params.require(:portfolio).permit(:title, :subtitle, :body))
-        format.html { redirect_to portfolios_path, notice: 'The record was successfully updated.' }
+      if @portfolio_item.update(portfolio_params)
+        format.html { redirect_to portfolios_path, notice: 'The record successfully updated.' }
       else
         format.html { render :edit }
       end
     end
   end
 
-  def show 
+  def show
     @portfolio_item = Portfolio.find(params[:id])
   end
 
   def destroy
-    #this is going to perform lookup
+    # Perform the lookup
     @portfolio_item = Portfolio.find(params[:id])
-    
-    #this is going to destroy the record
+
+    # Destroy/delete the record
     @portfolio_item.destroy
 
-    # Redirection 
+    # Redirect
     respond_to do |format|
       format.html { redirect_to portfolios_url, notice: 'Record was removed.' }
     end
+  end
+
+  private
+
+  def portfolio_params
+    params.require(:portfolio).permit(:title,
+                                      :subtitle,
+                                      :body,
+                                      technologies_attributes: [:name]
+                                     )
   end
 
 end
